@@ -1,0 +1,4 @@
+# BTUI - Bruce's Terminal User Interface
+
+This is an extremely lightweight, but powerful Tomo library for making terminal
+user interfaces.
