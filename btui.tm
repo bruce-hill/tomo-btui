@@ -1,4 +1,4 @@
-
+# A tomo library for Terminal User Interfaces
 use ./btui.c
 
 enum Color(Normal, Black, Red, Green, Yellow, Blue, Magenta, Cyan, White, Color256(n:Byte), RGB(r,g,b:Byte))

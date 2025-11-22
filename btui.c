@@ -1,6 +1,6 @@
 /*
  * btui.h
- * Copyright 2020 Bruce Hill
+ * Copyright 2025 Bruce Hill
  * Released under the MIT License
  *
  * This file defines some Text User Interface (TUI) functionality.

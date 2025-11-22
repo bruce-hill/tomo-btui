@@ -35,3 +35,10 @@ func main()
 
     disable()
 ```
+
+A more complex example program can be found at [examples/picker.tm](examples/picker.tm)
+
+## License
+
+This code is licensed under the MIT license with the Commons Clause.
+See [LICENSE.md](LICENSE.md) for full details.
