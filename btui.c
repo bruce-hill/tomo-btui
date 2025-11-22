@@ -247,6 +247,7 @@ void btui_init(void);
 char *btui_keyname(int key, char *buf);
 int btui_keynamed(const char *name);
 int btui_move_cursor(int x, int y);
+int btui_move_cursor_relative(int x, int y);
 #define btui_printf(bt, ...) fprintf((bt)->out, __VA_ARGS__)
 int btui_puts(const char *s);
 int btui_scroll(int firstline, int lastline, int scroll_amount);
@@ -414,7 +415,10 @@ static void btui_disable_and_raise(int sig) {
 static void update_term_size(int sig) {
     (void)sig;
     struct winsize winsize;
-    ioctl(STDIN_FILENO, TIOCGWINSZ, &winsize);
+    if (ioctl(fileno(bt.in), TIOCGWINSZ, &winsize) == -1) {
+        btui_disable();
+        err(1, "Failed to get terminal size!");
+    }
     if (winsize.ws_col != bt.width || winsize.ws_row != bt.height) {
         bt.width = winsize.ws_col;
         bt.height = winsize.ws_row;
@@ -809,7 +813,7 @@ int btui_move_cursor_relative(int x, int y) {
     if (x > 0) n += fprintf(bt.out, "\033[%d A", x);
     else if (x < 0) n += fprintf(bt.out, "\033[%d @", -x);
     if (y > 0) n += fprintf(bt.out, "\033[%dB", y);
-    else if (y < 0) n += fprintf(bt.out, "\033[%dA", y);
+    else if (y < 0) n += fprintf(bt.out, "\033[%dA", -y);
     return n;
 }
 
