@@ -850,7 +850,7 @@ int btui_scroll(int firstline, int lastline, int scroll_amount) {
  */
 int btui_set_attributes(attr_t attrs) {
     int printed = fputs("\033[", bt.out);
-    for (int i = 0; i < 64; i++) {
+    for (int i = 63; i >= 0; i--) {
         if (attrs & (1ul << i)) {
             attrs ^= (1ul << i);
             if (attrs) printed += fprintf(bt.out, "%d;", i);

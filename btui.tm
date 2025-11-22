@@ -151,6 +151,19 @@ func style(
         is White then C_code `btui_set_attributes(BTUI_BG_WHITE);`
 
     C_code `uint64_t attr = 0;`
+
+    # Disable attributes
+    if bold == no or faint then C_code `attr |= BTUI_NO_BOLD_OR_FAINT;`
+    if italic == no or fraktur == no then C_code `attr |= BTUI_NO_ITALIC_OR_FRAKTUR;`
+    if underline == no then C_code `attr |= BTUI_NO_UNDERLINE;`
+    if blink_slow == no or blink_fast == no then C_code `attr |= BTUI_NO_BLINK;`
+    if reverse == no then C_code `attr |= BTUI_NO_REVERSE;`
+    if conceal == no then C_code `attr |= BTUI_NO_CONCEAL;`
+    if strikethrough == no then C_code `attr |= BTUI_NO_STRIKETHROUGH;`
+    if framed == no or encircled == no then C_code `attr |= BTUI_NO_FRAMED_OR_ENCIRCLED;`
+    if overlined == no then C_code `attr |= BTUI_NO_OVERLINED;`
+
+    # Turn on attributes
     if normal == yes then C_code `attr |= BTUI_NORMAL;`
     if bold == yes then C_code `attr |= BTUI_BOLD;`
     if faint == yes then C_code `attr |= BTUI_FAINT;`
@@ -167,16 +180,6 @@ func style(
     if encircled == yes then C_code `attr |= BTUI_ENCIRCLED;`
     if overlined == yes then C_code `attr |= BTUI_OVERLINED;`
 
-    if bold == no or faint then C_code `attr |= BTUI_NO_BOLD_OR_FAINT;`
-    if italic == no or fraktur == no then C_code `attr |= BTUI_NO_ITALIC_OR_FRAKTUR;`
-    if underline == no then C_code `attr |= BTUI_NO_UNDERLINE;`
-    if blink_slow == no or blink_fast == no then C_code `attr |= BTUI_NO_BLINK;`
-    if reverse == no then C_code `attr |= BTUI_NO_REVERSE;`
-    if conceal == no then C_code `attr |= BTUI_NO_CONCEAL;`
-    if strikethrough == no then C_code `attr |= BTUI_NO_STRIKETHROUGH;`
-    if framed == no or encircled == no then C_code `attr |= BTUI_NO_FRAMED_OR_ENCIRCLED;`
-    if overlined == no then C_code `attr |= BTUI_NO_OVERLINED;`
-
     C_code `if (attr) btui_set_attributes(attr);`
 
 func suspend()
@@ -186,15 +189,17 @@ func main()
     set_mode(TUI)
     size := get_size()
     style(bold=yes)
-    write("Hello world!", size/2, Center)
+    write("Welcome to BTUI", size/2, Center)
+    style(bold=no, faint=yes)
+    write("Press 'q' or 'Ctrl-c' to quit", size/2 + ScreenVec2(0,1), Center)
     style(bold=no)
     repeat
         key := get_key()
-        pos := size/2 + ScreenVec2(0,1)
+        pos := size/2 + ScreenVec2(0,2)
         clear(Line, pos=pos)
         style(Magenta)
         write("Your input: $key", pos, Center)
-        if key == "q"
+        if key == "q" or key == "Ctrl-c"
             stop
 
     disable()

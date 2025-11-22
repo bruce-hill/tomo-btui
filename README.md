@@ -22,15 +22,17 @@ func main()
     set_mode(TUI)
     size := get_size()
     style(bold=yes)
-    write("Hello world!", size/2, Center)
+    write("Welcome to BTUI", size/2, Center)
+    style(bold=no, faint=yes)
+    write("Press 'q' or 'Ctrl-c' to quit", size/2 + ScreenVec2(0,1), Center)
     style(bold=no)
     repeat
         key := get_key()
-        pos := size/2 + ScreenVec2(0,1)
+        pos := size/2 + ScreenVec2(0,2)
         clear(Line, pos=pos)
         style(Magenta)
         write("Your input: $key", pos, Center)
-        if key == "q"
+        if key == "q" or key == "Ctrl-c"
             stop
 
     disable()
