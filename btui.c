@@ -802,6 +802,18 @@ check_names:
 int btui_move_cursor(int x, int y) { return fprintf(bt.out, "\033[%d;%dH", y + 1, x + 1); }
 
 /*
+ * Move the terminal's cursor relative to its current position.
+ */
+int btui_move_cursor_relative(int x, int y) {
+    int n = 0;
+    if (x > 0) n += fprintf(bt.out, "\033[%d A", x);
+    else if (x < 0) n += fprintf(bt.out, "\033[%d @", -x);
+    if (y > 0) n += fprintf(bt.out, "\033[%dB", y);
+    else if (y < 0) n += fprintf(bt.out, "\033[%dA", y);
+    return n;
+}
+
+/*
  * Hide the terminal cursor.
  */
 int btui_hide_cursor(void) { return fputs(T_OFF(T_SHOW_CURSOR), bt.out); }

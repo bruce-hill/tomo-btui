@@ -67,8 +67,11 @@ func set_cursor(cursor:CursorMode)
     is BlinkingBar then C_code`btui_set_cursor(CURSOR_BLINKING_BAR);`
     is SteadyBar then C_code`btui_set_cursor(CURSOR_STEADY_BAR);`
 
-func move_cursor(pos:ScreenVec2)
-    C_code `btui_move_cursor(@(Int32(pos.x)), @(Int32(pos.y)));`
+func move_cursor(pos:ScreenVec2, relative=no)
+    if relative
+        C_code `btui_move_cursor_relative(@(Int32(pos.x)), @(Int32(pos.y)));`
+    else
+        C_code `btui_move_cursor(@(Int32(pos.x)), @(Int32(pos.y)));`
 
 func hide_cursor()
     C_code `btui_hide_cursor();`

@@ -1,5 +1,9 @@
 # Version History
 
+## v1.2
+
+- Added `relative` parameter to `move_cursor()`
+
 ## v1.1
 
 - Added 256 color support
