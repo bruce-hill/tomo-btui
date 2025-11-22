@@ -1,5 +1,5 @@
 # An example program to pick a line of input from stdin
-use ./btui.tm
+use ../btui.tm
 
 _HELP := "
     A simple picker program
@@ -10,7 +10,7 @@ struct Picker(
     prompt=">",
     query="",
     offset:Int=0,
-    max_height:Int?=none,
+    max_height:Int?=20,
 )
     func draw(self:Picker)
         live_options := self.live_options()
@@ -68,7 +68,7 @@ struct Picker(
         else
             return none
 
-func main(choices:Path=(/dev/stdin), prompt|p=">", query|q="", max_height|H:Int?=none)
+func main(choices:Path=(/dev/stdin), prompt|p=">", query|q="", max_height|H:Int?=20)
     lines := choices.lines() or fail("No such file: $choices")
     lines = [line for line in lines if line.length > 0]
     picker := Picker(
