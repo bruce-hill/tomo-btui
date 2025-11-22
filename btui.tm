@@ -1,7 +1,7 @@
 
 use ./btui.c
 
-enum Color(Normal, Black, Red, Green, Yellow, Blue, Magenta, Cyan, White, RGB(r,g,b:Byte))
+enum Color(Normal, Black, Red, Green, Yellow, Blue, Magenta, Cyan, White, Color256(n:Byte), RGB(r,g,b:Byte))
 
 struct ScreenVec2(x,y:Int)
     func divided_by(v:ScreenVec2, divisor:Int -> ScreenVec2)
@@ -106,88 +106,90 @@ func draw_linebox(pos:ScreenVec2, size:ScreenVec2)
 func draw_shadow(pos:ScreenVec2, size:ScreenVec2)
     C_code `btui_draw_shadow(@(Int32(pos.x)), @(Int32(pos.y)), @(Int32(size.x)), @(Int32(size.y)));`
 
+
 func fill_box(pos:ScreenVec2, size:ScreenVec2)
     C_code `btui_fill_box(@(Int32(pos.x)), @(Int32(pos.y)), @(Int32(size.x)), @(Int32(size.y)));`
 
 func scroll(first_line:Int, last_line:Int, scroll_amount:Int)
     C_code `btui_scroll(@(Int32(first_line)), @(Int32(last_line)), @(Int32(scroll_amount)));`
 
-func set_fg(color:Color)
-    when color is RGB(r,g,b) then C_code `btui_set_fg(@r, @g, @b);`
-    is Normal then C_code `btui_set_attributes(BTUI_FG_NORMAL);`
-    is Black then C_code `btui_set_attributes(BTUI_FG_BLACK);`
-    is Red then C_code `btui_set_attributes(BTUI_FG_RED);`
-    is Green then C_code `btui_set_attributes(BTUI_FG_GREEN);`
-    is Yellow then C_code `btui_set_attributes(BTUI_FG_YELLOW);`
-    is Blue then C_code `btui_set_attributes(BTUI_FG_BLUE);`
-    is Magenta then C_code `btui_set_attributes(BTUI_FG_MAGENTA);`
-    is Cyan then C_code `btui_set_attributes(BTUI_FG_CYAN);`
-    is White then C_code `btui_set_attributes(BTUI_FG_WHITE);`
+func style(
+    fg:Color?=none, bg:Color?=none,
+    normal:Bool?=none, bold:Bool?=none, faint:Bool?=none, italic:Bool?=none,
+    underline:Bool?=none, blink_slow:Bool?=none, blink_fast:Bool?=none,
+    reverse:Bool?=none, conceal:Bool?=none, strikethrough:Bool?=none,
+    fraktur:Bool?=none, double_underline:Bool?=none, framed:Bool?=none,
+    encircled:Bool?=none, overlined:Bool?=none,
+)
+    if fg
+        when fg is RGB(r,g,b) then C_code `btui_set_fg(@r, @g, @b);`
+        is Color256(n) then C_code `btui_set_fg256(@n);`
+        is Normal then C_code `btui_set_attributes(BTUI_FG_NORMAL);`
+        is Black then C_code `btui_set_attributes(BTUI_FG_BLACK);`
+        is Red then C_code `btui_set_attributes(BTUI_FG_RED);`
+        is Green then C_code `btui_set_attributes(BTUI_FG_GREEN);`
+        is Yellow then C_code `btui_set_attributes(BTUI_FG_YELLOW);`
+        is Blue then C_code `btui_set_attributes(BTUI_FG_BLUE);`
+        is Magenta then C_code `btui_set_attributes(BTUI_FG_MAGENTA);`
+        is Cyan then C_code `btui_set_attributes(BTUI_FG_CYAN);`
+        is White then C_code `btui_set_attributes(BTUI_FG_WHITE);`
 
-func set_bg(color:Color)
-    when color is RGB(r,g,b) then C_code `btui_set_bg(@r, @g, @b);`
-    is Normal then C_code `btui_set_attributes(BTUI_BG_NORMAL);`
-    is Black then C_code `btui_set_attributes(BTUI_BG_BLACK);`
-    is Red then C_code `btui_set_attributes(BTUI_BG_RED);`
-    is Green then C_code `btui_set_attributes(BTUI_BG_GREEN);`
-    is Yellow then C_code `btui_set_attributes(BTUI_BG_YELLOW);`
-    is Blue then C_code `btui_set_attributes(BTUI_BG_BLUE);`
-    is Magenta then C_code `btui_set_attributes(BTUI_BG_MAGENTA);`
-    is Cyan then C_code `btui_set_attributes(BTUI_BG_CYAN);`
-    is White then C_code `btui_set_attributes(BTUI_BG_WHITE);`
+    if bg
+        when bg is RGB(r,g,b) then C_code `btui_set_bg(@r, @g, @b);`
+        is Color256(n) then C_code `btui_set_bg256(@n);`
+        is Normal then C_code `btui_set_attributes(BTUI_BG_NORMAL);`
+        is Black then C_code `btui_set_attributes(BTUI_BG_BLACK);`
+        is Red then C_code `btui_set_attributes(BTUI_BG_RED);`
+        is Green then C_code `btui_set_attributes(BTUI_BG_GREEN);`
+        is Yellow then C_code `btui_set_attributes(BTUI_BG_YELLOW);`
+        is Blue then C_code `btui_set_attributes(BTUI_BG_BLUE);`
+        is Magenta then C_code `btui_set_attributes(BTUI_BG_MAGENTA);`
+        is Cyan then C_code `btui_set_attributes(BTUI_BG_CYAN);`
+        is White then C_code `btui_set_attributes(BTUI_BG_WHITE);`
+
+    C_code `uint64_t attr = 0;`
+    if normal == yes then C_code `attr |= BTUI_NORMAL;`
+    if bold == yes then C_code `attr |= BTUI_BOLD;`
+    if faint == yes then C_code `attr |= BTUI_FAINT;`
+    if italic == yes then C_code `attr |= BTUI_ITALIC;`
+    if underline == yes then C_code `attr |= BTUI_UNDERLINE;`
+    if blink_slow == yes then C_code `attr |= BTUI_BLINK_SLOW;`
+    if blink_fast == yes then C_code `attr |= BTUI_BLINK_FAST;`
+    if reverse == yes then C_code `attr |= BTUI_REVERSE;`
+    if conceal == yes then C_code `attr |= BTUI_CONCEAL;`
+    if strikethrough == yes then C_code `attr |= BTUI_STRIKETHROUGH;`
+    if fraktur == yes then C_code `attr |= BTUI_FRAKTUR;`
+    if double_underline == yes then C_code `attr |= BTUI_DOUBLE_UNDERLINE;`
+    if framed == yes then C_code `attr |= BTUI_FRAMED;`
+    if encircled == yes then C_code `attr |= BTUI_ENCIRCLED;`
+    if overlined == yes then C_code `attr |= BTUI_OVERLINED;`
+
+    if bold == no or faint then C_code `attr |= BTUI_NO_BOLD_OR_FAINT;`
+    if italic == no or fraktur == no then C_code `attr |= BTUI_NO_ITALIC_OR_FRAKTUR;`
+    if underline == no then C_code `attr |= BTUI_NO_UNDERLINE;`
+    if blink_slow == no or blink_fast == no then C_code `attr |= BTUI_NO_BLINK;`
+    if reverse == no then C_code `attr |= BTUI_NO_REVERSE;`
+    if conceal == no then C_code `attr |= BTUI_NO_CONCEAL;`
+    if strikethrough == no then C_code `attr |= BTUI_NO_STRIKETHROUGH;`
+    if framed == no or encircled == no then C_code `attr |= BTUI_NO_FRAMED_OR_ENCIRCLED;`
+    if overlined == no then C_code `attr |= BTUI_NO_OVERLINED;`
+
+    C_code `if (attr) btui_set_attributes(attr);`
 
 func suspend()
     C_code `btui_suspend();`
 
-struct TextAttributes(
-    Normal=no, Bold=no, Faint=no, Italic=no, Underline=no, BlinkSlow=no,
-    BlinkFast=no, Reverse=no, Conceal=no, Strikethrough=no, Fraktur=no,
-    DoubleUnderline=no, Framed=no, Encircled=no, Overlined=no,
-)
-
-func enable_attributes(attributes:TextAttributes)
-    C_code `uint64_t attr = 0;`
-    if attributes.Normal then C_code `attr |= BTUI_NORMAL;`
-    if attributes.Bold then C_code `attr |= BTUI_BOLD;`
-    if attributes.Faint then C_code `attr |= BTUI_FAINT;`
-    if attributes.Italic then C_code `attr |= BTUI_ITALIC;`
-    if attributes.Underline then C_code `attr |= BTUI_UNDERLINE;`
-    if attributes.BlinkSlow then C_code `attr |= BTUI_BLINK_SLOW;`
-    if attributes.BlinkFast then C_code `attr |= BTUI_BLINK_FAST;`
-    if attributes.Reverse then C_code `attr |= BTUI_REVERSE;`
-    if attributes.Conceal then C_code `attr |= BTUI_CONCEAL;`
-    if attributes.Strikethrough then C_code `attr |= BTUI_STRIKETHROUGH;`
-    if attributes.Fraktur then C_code `attr |= BTUI_FRAKTUR;`
-    if attributes.DoubleUnderline then C_code `attr |= BTUI_DOUBLE_UNDERLINE;`
-    if attributes.Framed then C_code `attr |= BTUI_FRAMED;`
-    if attributes.Encircled then C_code `attr |= BTUI_ENCIRCLED;`
-    if attributes.Overlined then C_code `attr |= BTUI_OVERLINED;`
-    C_code `btui_set_attributes(attr);`
-
-func disable_attributes(attributes:TextAttributes)
-    C_code `uint64_t attr = 0;`
-    if attributes.Bold or attributes.Faint then C_code `attr |= BTUI_NO_BOLD_OR_FAINT;`
-    if attributes.Italic or attributes.Fraktur then C_code `attr |= BTUI_NO_ITALIC_OR_FRAKTUR;`
-    if attributes.Underline then C_code `attr |= BTUI_NO_UNDERLINE;`
-    if attributes.BlinkSlow or attributes.BlinkFast then C_code `attr |= BTUI_NO_BLINK;`
-    if attributes.Reverse then C_code `attr |= BTUI_NO_REVERSE;`
-    if attributes.Conceal then C_code `attr |= BTUI_NO_CONCEAL;`
-    if attributes.Strikethrough then C_code `attr |= BTUI_NO_STRIKETHROUGH;`
-    if attributes.Framed or attributes.Encircled then C_code `attr |= BTUI_NO_FRAMED_OR_ENCIRCLED;`
-    if attributes.Overlined then C_code `attr |= BTUI_NO_OVERLINED;`
-    C_code `btui_set_attributes(attr);`
-
 func main()
     set_mode(TUI)
     size := get_size()
-    enable_attributes(TextAttributes(Bold=yes))
+    style(bold=yes)
     write("Hello world!", size/2, Center)
-    disable_attributes(TextAttributes(Bold=yes))
+    style(bold=no)
     repeat
         key := get_key()
         pos := size/2 + ScreenVec2(0,1)
         clear(Line, pos=pos)
-        set_fg(Magenta)
+        style(Magenta)
         write("Your input: $key", pos, Center)
         if key == "q"
             stop

@@ -853,6 +853,11 @@ int btui_set_bg(unsigned char r, unsigned char g, unsigned char b) {
 }
 
 /*
+ * Set the terminal text background color to the given RGB value.
+ */
+int btui_set_bg256(unsigned char n) { return fprintf(bt.out, "\033[48;5;%dm", n); }
+
+/*
  * Set the terminal text background color to the given hexidecimal value.
  */
 int btui_set_bg_hex(uint32_t hex) {
@@ -871,6 +876,11 @@ int btui_set_cursor(cursor_t cur) { return fprintf(bt.out, "\033[%u q", cur); }
 int btui_set_fg(unsigned char r, unsigned char g, unsigned char b) {
     return fprintf(bt.out, "\033[38;2;%d;%d;%dm", r, g, b);
 }
+
+/*
+ * Set the terminal text background color to the given RGB value.
+ */
+int btui_set_fg256(unsigned char n) { return fprintf(bt.out, "\033[38;5;%dm", n); }
 
 /*
  * Set the terminal text foreground color to the given hexidecimal value.
