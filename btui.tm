@@ -2,6 +2,23 @@
 use ./btui.c
 
 enum Color(Normal, Black, Red, Green, Yellow, Blue, Magenta, Cyan, White, Color256(n:Byte), RGB(r,g,b:Byte))
+    func is_dark(c:Color -> Bool)
+        when c is Black
+            return yes
+        is Color256(n)
+            return n == 0 or n == 16 or n == 17 or (232 <= n and n <= 237)
+        is RGB(r,g,b)
+            return Int(r)+Int(g)+Int(b) < 127*3
+        else
+            return no
+
+    func is_light(c:Color -> Bool)
+        when c is White
+            return yes
+        is Color256, RGB
+            return not c.is_dark()
+        else
+            return no
 
 struct ScreenVec2(x,y:Int)
     func divided_by(v:ScreenVec2, divisor:Int -> ScreenVec2)
@@ -102,7 +119,7 @@ func get_key(mouse_pos:&ScreenVec2?=none, timeout:Int?=none -> Text)
 
 func flush()
     C_code `btui_flush();`
-    
+
 func draw_linebox(pos:ScreenVec2, size:ScreenVec2)
     C_code `btui_draw_linebox(@(Int32(pos.x)), @(Int32(pos.y)), @(Int32(size.x)), @(Int32(size.y)));`
 
@@ -182,6 +199,47 @@ func style(
 
     C_code `if (attr) btui_set_attributes(attr);`
 
+func get_bg(->Color?)
+    no_color : Color? = none
+    response := C_code:Text`
+        const char *query_bg = "\\x1b]11;?\\x07";
+        write(fileno(bt.out), query_bg, strlen(query_bg));
+
+        char buf[256] = {};
+        ssize_t n = read(fileno(bt.in), buf, sizeof(buf)-1);
+        if (n < 0) {
+            return @(no_color);
+        }
+        const char *response_prefix = "\\x1b]11;";
+        size_t prefix_len = strlen(response_prefix);
+        if ((size_t)n < prefix_len || strncmp(buf, response_prefix, prefix_len) != 0) {
+            return @(no_color);
+        }
+
+        Text$from_strn(buf + prefix_len, n - prefix_len)
+    `
+    value : Text
+    if response.starts_with("rgb:", &value) or response.starts_with("rgba:", &value)
+        rgb := value.split("/")
+        r := Byte.parse("0x"++rgb[1]!.to(2)) or return none
+        g := Byte.parse("0x"++rgb[2]!.to(2)) or return none
+        b := Byte.parse("0x"++rgb[3]!.to(2)) or return none
+        return Color.RGB(r,g,b)
+    else if response.starts_with("#", &value)
+        r := Byte.parse("0x"++value.from(1).to(2)) or return none
+        g := Byte.parse("0x"++value.from(3).to(4)) or return none
+        b := Byte.parse("0x"++value.from(5).to(6)) or return none
+        return Color.RGB(r, g, b)
+    else if response.starts_with("rgb(", &value) or response.starts_with("rgba(", &value)
+        value = value.without_suffix(")")
+        rgb := value.split(",")
+        r := Byte.parse(rgb[1] or return none) or return none
+        g := Byte.parse(rgb[2] or return none) or return none
+        b := Byte.parse(rgb[3] or return none) or return none
+        return Color.RGB(r,g,b)
+    else
+        return none
+
 func suspend()
     C_code `btui_suspend();`
 
@@ -192,6 +250,8 @@ func main()
     write("Welcome to BTUI", size/2, Center)
     style(bold=no, faint=yes)
     write("Press 'q' or 'Ctrl-c' to quit", size/2 + ScreenVec2(0,1), Center)
+    bg := get_bg()
+    write("BG: $bg (dark=$((bg or Color.Normal).is_dark()))", size/2 + ScreenVec2(0,3), Center)
     style(bold=no)
     repeat
         key := get_key()
